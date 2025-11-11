@@ -1,95 +1,74 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { Container, Button, Form, Card } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { WeatherSearch } from "./actions";
+import { useState } from "react";
+import { WeatherData } from "../types/weather";
+
+function SubmitButton() {
+  return (
+    <Button variant="primary" type="submit" className="w-100">
+      Get Weather
+    </Button>
+  );
+}
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [error, setError] = useState<string>("");
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const WeatherSearchData = async (formData: FormData) => {
+    setError("");
+    const city = formData.get("city")?.toString() || "";
+    console.log("Weather search initiated");
+
+    const { data, error: weatherError } = await WeatherSearch(city);
+
+    if (weatherError) {
+      setError(weatherError);
+      setWeather(null);
+    }
+
+    if (data) {
+      setWeather(data);
+    }
+  };
+
+  return (
+    <Container
+      fluid
+      className="d-flex flex-column align-items-center justify-content-center min-vh-100"
+      style={{ backgroundColor: "#4d91f8" }}>
+
+      <Form action={WeatherSearchData} className="d-flex flex-column align-items-center p-4 rounded" style={{
+          backgroundColor: "white",
+          width: '300px'}}>
+        <Form.Group className="mb-3 text-center">
+          <Form.Label>Input City Name</Form.Label>
+          <Form.Control type="text" placeholder="Enter city name" className="mb-3" name="city"/>
+        </Form.Group>
+        <SubmitButton />
+      </Form>
+
+      {error && <p className="text-danger mt-3">{error}</p>}
+
+      {weather && (
+        <Card className="mt-4" style={{ width: '18rem' }}>
+          <Card.Body>
+            <Card.Title>{weather.name}</Card.Title>
+            <Card.Subtitle className="mb-2 text-muted"> {weather.weather[0].main} </Card.Subtitle>
+            <Card.Text>
+              Temperature: {weather.main.temp}°C<br />
+              Feels Like: {weather.main.feels_like}°C<br />
+              Humidity: {weather.main.humidity}%<br />
+              Wind Speed: {weather.wind.speed} m/s<br />
+              Description: {weather.weather[0].description}<br />
+              <img src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}.png`} alt="Weather Icon"/>
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      )}
+    </Container>
   );
 }
