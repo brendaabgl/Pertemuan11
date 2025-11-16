@@ -1,3 +1,4 @@
+//Interface: menentukan struktur data (membentuk blueprint)
 export interface WeatherData {
   name: string;
   main: {

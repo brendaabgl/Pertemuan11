@@ -1,11 +1,12 @@
-"use client";
+"use client"; //Client component: logic dijalankan di browser bukan server
 
 import { Container, Button, Form, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { WeatherSearch } from "./actions";
-import { useState } from "react";
+import { useState } from "react"; // hook
 import { WeatherData } from "../types/weather";
 
+//function berupa component submit button
 function SubmitButton() {
   return (
     <Button variant="primary" type="submit" className="w-100">
@@ -15,25 +16,34 @@ function SubmitButton() {
 }
 
 export default function Home() {
+  //state weather bisa berisikan WeatherData atau null dengan nilai awal null
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  //state error berisikan string dengan nilai awal string kosong
   const [error, setError] = useState<string>("");
 
   const WeatherSearchData = async (formData: FormData) => {
+    // reset error
     setError("");
+    // get city dan ubah ke string
     const city = formData.get("city")?.toString() || "";
     console.log("Weather search initiated");
 
+    // panggil fungsi WeatherSearch dimana hasil akan disimpan di data dan error di simpan di weatherError
     const { data, error: weatherError } = await WeatherSearch(city);
 
+    // jika ada error
     if (weatherError) {
       setError(weatherError);
       setWeather(null);
     }
 
+    // jika data ada
     if (data) {
       setWeather(data);
     }
   };
+  // cek data weather
+  console.log("Weather data", weather);
 
   return (
     <Container
@@ -50,9 +60,10 @@ export default function Home() {
         </Form.Group>
         <SubmitButton />
       </Form>
-
+      {/* jika error ada, tampilkan pesan error */}
       {error && <p className="text-danger mt-3">{error}</p>}
-
+      
+      {/* jika weather ada, tampilkan card */}
       {weather && (
         <Card className="mt-4" style={{ width: '18rem' }}>
           <Card.Body>
